@@ -243,6 +243,18 @@ type ToneInstance<
     readonly subtone?: Subtones<TData>
 }
 
+type PaletteWithBase<
+    TInput extends Record<string, TData>,
+    TData extends Record<string, string>,
+    TBase extends ToneInstance<TData>
+> = { [K in keyof TInput]: TInput[K] & ReturnType<TBase> }
+
+type PaletteWithTones<
+    TInput extends Record<string, TData>,
+    TData extends Record<string, string>,
+    TTones extends Record<string, ToneInstance<TData>>
+> = { [K in keyof TInput]: TInput[K] }
+
 function createPalette<
     TInput extends Record<string, TData>,
     TData extends Record<string, string> = ColorData
@@ -250,28 +262,44 @@ function createPalette<
 
 function createPalette<
     TInput extends Record<string, TData>,
-    TBase extends ToneInstance<TData>,
-    TData extends Record<string, string> = ColorData
->(
-    input: TInput,
-    options: {
-        base: TBase
-    }
-): { [K in keyof TInput]: TInput[K] & ReturnType<TBase> }
+    TData extends Record<string, string> = ColorData,
+    TBase extends ToneInstance<TData> = ToneInstance<TData>
+>(input: TInput, options: { base: TBase }): PaletteWithBase<TInput, TData, TBase>
 
-function createPalette<TData extends Record<string, string>, TInput extends Record<string, TData>>(
-    input: TInput,
-    options: {
-        tones: any
-    }
-): any
-function createPalette<TData extends Record<string, string>, TInput extends Record<string, TData>>(
-    input: TInput,
-    options: {
-        base: any
-        tones: any
-    }
-): any
+function createPalette<
+    TInput extends Record<string, TData>,
+    TData extends Record<string, string> = ColorData,
+    TTones extends Record<string, ToneInstance<TData>> = Record<string, ToneInstance<TData>>
+>(input: TInput, options: { tones: TTones }): PaletteWithTones<TInput, TData, TTones>
+
+// function createPalette<
+//     TInput extends Record<string, TData>,
+//     TBase extends ToneInstance<TData>,
+//     TData extends Record<string, string> = ColorData
+// >(
+//     input: TInput,
+//     options: {
+//         base: TBase
+//     }
+// ): { [K in keyof TInput]: TInput[K] & ReturnType<TBase> }
+
+// function createPalette<
+//     TData extends Record<string, string>,
+//     TInput extends Record<string, TData>,
+//     TTones extends Record<string, ToneInstance<TData>>
+// >(
+//     input: TInput,
+//     options: {
+//         tones: TTones
+//     }
+// ): TData
+// function createPalette<TData extends Record<string, string>, TInput extends Record<string, TData>>(
+//     input: TInput,
+//     options: {
+//         base: any
+//         tones: any
+//     }
+// ): any
 
 function createPalette<TData extends Record<string, string>, TInput extends Record<string, TData>>(
     input: TInput,
