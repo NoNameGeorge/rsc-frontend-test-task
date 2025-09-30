@@ -187,7 +187,6 @@ const customTone = createTone((data: CustomColorData) => ({
 }))
 type TCustomTone = typeof customTone
 
-
 // =============== createPalette ===============
 /**
  * ***решил оставить
@@ -198,13 +197,12 @@ type TCustomTone = typeof customTone
  * 2.1. Берем результат base, соединяем с input[цвет] и записываем как "цвет"
  * 2.2. Технически base может иметь subtone, но ее мы вроде не используем (да же?)
  * 3. Далее работаем с tones, если они есть
- * 3.1. Каждый input прогоняем через tone(data
+ * 3.1. Каждый input прогоняем через tone
  * 3.2. Полученный результат записываем как "цвет_имя_тона" (например: "red_brightness")
  * 3.3. Далее прогоняем input через subtone текущего тона
  * 3.4. Полученный результат записываем как "цвет_подтон_имя_тона" (например: "red_low_brightness")
  * 4. Вроде как все, соединяем все в один объект и возвращаем
  */
-
 
 const input = {
     red: {
@@ -234,23 +232,50 @@ const input = {
 }
 // satisfies InputModel
 
+type TBase = any
+type TTones = any
 
-function createPalette(
-    input: Record<string, Record<string, string>>,
+function createPalette<TData extends Record<string, string>, TInput extends Record<string, TData>>(
+    input: TInput
+): TInput
+function createPalette<TData extends Record<string, string>, TInput extends Record<string, TData>>(
+    input: TInput,
+    options: {
+        base: TBase
+    }
+): any
+function createPalette<TData extends Record<string, string>, TInput extends Record<string, TData>>(
+    input: TInput,
+    options: {
+        tones: TTones
+    }
+): any
+function createPalette<TData extends Record<string, string>, TInput extends Record<string, TData>>(
+    input: TInput,
+    options: {
+        base: TBase
+        tones: TTones
+    }
+): any
+
+function createPalette<TData extends Record<string, string>, TInput extends Record<string, TData>>(
+    input: TInput,
     options?: {
-        base: {
+        base?: {
             (data: Record<string, string>): Record<string, string>
             toneName?: string
             subtone?: Record<string, (data: Record<string, string>) => Record<string, string>>
         }
-        tones: Record<string, {
-            (data: Record<string, string>): Record<string, string>
-            toneName?: string
-            subtone?: Record<string, (data: Record<string, string>) => Record<string, string>>
-        }>
-    } 
+        tones?: Record<
+            string,
+            {
+                (data: Record<string, string>): Record<string, string>
+                toneName?: string
+                subtone?: Record<string, (data: Record<string, string>) => Record<string, string>>
+            }
+        >
+    }
 ) {
-    
     return {} as any
 }
 
