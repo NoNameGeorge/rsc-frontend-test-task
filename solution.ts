@@ -1,12 +1,12 @@
-type ColorsUnion = 'red' | 'green' | 'blue' | 'yellow' // может быть расширяемым
+type ColorsUnion = 'red' | 'green' | 'blue' | 'yellow'
 type ColorData = {
-    // тоже может быть любым
     main: string
     dark: string
     light: string
     extra: string
 }
 
+// Чисто для теста создал, но акцент наверное будет на ColorData
 type CustomColorData = {
     primary: string
     secondary: string
@@ -30,33 +30,47 @@ type InputModel = Record<ColorsUnion, ColorData>
 
 type ColorTransform<
     TData extends Record<string, string>,
-    TResult extends Record<string, string> = Record<string, string>
+    TResult extends Record<string, string>
 > = (data: TData) => TResult
-type Subtones<TData extends Record<string, string>> = Record<string, ColorTransform<TData>>
+type Subtones<
+    TData extends Record<string, string>,
+    TResult extends Record<string, string> = Record<string, string>
+> = Record<string, ColorTransform<TData, TResult>>
+type Tone<
+    TData extends Record<string, string>,
+    TResult extends Record<string, string> = Record<string, string>,
+    TName extends string | undefined = undefined
+> = ((data: TData) => TResult) &
+    (TName extends string ? { readonly toneName?: TName; readonly subtone?: Subtones<TData> } : {})
 
 function createTone<
     TData extends Record<string, string> = ColorData,
-    TTransformResult extends Record<string, string> = Record<string, string>
->(transform: ColorTransform<TData, TTransformResult>): { (data: TData): TTransformResult }
+    TResult extends Record<string, string> = Record<string, string>
+>(transform: ColorTransform<TData, TResult>): Tone<TData, TResult>
 
 function createTone<
+    TData extends Record<string, string> = ColorData,
+    TResult extends Record<string, string> = Record<string, string>,
     TName extends string = string,
-    TData extends Record<string, string> = ColorData,
-    TTransformResult extends Record<string, string> = Record<string, string>,
     TSubtones extends Subtones<TData> = Subtones<TData>
 >(
-    transform: ColorTransform<TData, TTransformResult>,
+    transform: ColorTransform<TData, TResult>,
     options: { name: TName; subtone: TSubtones }
-): { (data: TData): TTransformResult; readonly toneName: TName; readonly subtone: TSubtones }
+): { (data: TData): TResult; readonly toneName: TName; readonly subtone: TSubtones }
 
 function createTone<
-    TName extends string,
-    TData extends Record<string, string>,
-    TTransformResult extends Record<string, string>,
-    TSubtones extends Subtones<TData>
+    TData extends Record<string, string> = ColorData,
+    TResult extends Record<string, string> = Record<string, string>,
+    TName extends string | undefined = undefined,
+    TSubtones extends
+        | Record<string, (data: TData) => Record<string, string>>
+        | undefined = undefined
 >(
-    transform: ColorTransform<TData, TTransformResult>,
-    options?: { name: TName; subtone: TSubtones }
+    transform: (data: TData) => TResult,
+    options?: {
+        name: TName
+        subtone: TSubtones
+    }
 ) {
     const toneFunction = (data: TData) => transform(data)
 
@@ -186,157 +200,3 @@ const customTone = createTone((data: CustomColorData) => ({
     custom: data.primary,
 }))
 type TCustomTone = typeof customTone
-
-// =============== createPalette ===============
-/**
- * ***решил оставить
- *
- * Логика работы createPalette (для себя для удобства)
- * 1. Берем input (объект с цветовыми данными)
- * 2. Если есть base - прогоняем каждый цвет через base
- * 2.1. Берем результат base, соединяем с input[цвет] и записываем как "цвет"
- * 2.2. Технически base может иметь subtone, но ее мы вроде не используем (да же?)
- * 3. Далее работаем с tones, если они есть
- * 3.1. Каждый input прогоняем через tone
- * 3.2. Полученный результат записываем как "цвет_имя_тона" (например: "red_brightness")
- * 3.3. Далее прогоняем input через subtone текущего тона
- * 3.4. Полученный результат записываем как "цвет_подтон_имя_тона" (например: "red_low_brightness")
- * 4. Вроде как все, соединяем все в один объект и возвращаем
- */
-
-const input = {
-    red: {
-        main: 'red',
-        dark: 'darkred',
-        light: 'lightred',
-        extra: 'extrared',
-    },
-    green: {
-        main: 'green',
-        dark: 'darkgreen',
-        light: 'lightgreen',
-        extra: 'extragreen',
-    },
-    // blue: {
-    //     main: 'blue',
-    //     dark: 'darkblue',
-    //     light: 'lightblue',
-    //     extra: 'extrablue',
-    // },
-    // yellow: {
-    //     main: 'yellow',
-    //     dark: 'darkyellow',
-    //     light: 'lightyellow',
-    //     extra: 'extrayellow',
-    // },
-}
-// satisfies InputModel
-
-// type TBase = any
-// type TTones = any
-
-type ToneInstance<
-    TData extends Record<string, string>,
-    TResult extends Record<string, string> = Record<string, string>
-> = ((data: TData) => TResult) & {
-    readonly toneName?: string
-    readonly subtone?: Subtones<TData>
-}
-
-type PaletteWithBase<
-    TInput extends Record<string, TData>,
-    TData extends Record<string, string>,
-    TBase extends ToneInstance<TData>
-> = { [K in keyof TInput]: TInput[K] & ReturnType<TBase> }
-
-type PaletteWithTones<
-    TInput extends Record<string, TData>,
-    TData extends Record<string, string>,
-    TTones extends Record<string, ToneInstance<TData>>
-> = { [K in keyof TInput]: TInput[K] }
-
-function createPalette<
-    TInput extends Record<string, TData>,
-    TData extends Record<string, string> = ColorData
->(input: TInput): TInput
-
-function createPalette<
-    TInput extends Record<string, TData>,
-    TData extends Record<string, string> = ColorData,
-    TBase extends ToneInstance<TData> = ToneInstance<TData>
->(input: TInput, options: { base: TBase }): PaletteWithBase<TInput, TData, TBase>
-
-function createPalette<
-    TInput extends Record<string, TData>,
-    TData extends Record<string, string> = ColorData,
-    TTones extends Record<string, ToneInstance<TData>> = Record<string, ToneInstance<TData>>
->(input: TInput, options: { tones: TTones }): PaletteWithTones<TInput, TData, TTones>
-
-// function createPalette<
-//     TInput extends Record<string, TData>,
-//     TBase extends ToneInstance<TData>,
-//     TData extends Record<string, string> = ColorData
-// >(
-//     input: TInput,
-//     options: {
-//         base: TBase
-//     }
-// ): { [K in keyof TInput]: TInput[K] & ReturnType<TBase> }
-
-// function createPalette<
-//     TData extends Record<string, string>,
-//     TInput extends Record<string, TData>,
-//     TTones extends Record<string, ToneInstance<TData>>
-// >(
-//     input: TInput,
-//     options: {
-//         tones: TTones
-//     }
-// ): TData
-// function createPalette<TData extends Record<string, string>, TInput extends Record<string, TData>>(
-//     input: TInput,
-//     options: {
-//         base: any
-//         tones: any
-//     }
-// ): any
-
-function createPalette<TData extends Record<string, string>, TInput extends Record<string, TData>>(
-    input: TInput,
-    options?: {
-        base?: {
-            (data: Record<string, string>): Record<string, string>
-            toneName?: string
-            subtone?: Record<string, (data: Record<string, string>) => Record<string, string>>
-        }
-        tones?: Record<
-            string,
-            {
-                (data: Record<string, string>): Record<string, string>
-                toneName?: string
-                subtone?: Record<string, (data: Record<string, string>) => Record<string, string>>
-            }
-        >
-    }
-) {
-    return {} as any
-}
-
-const palette1 = createPalette(input)
-type TPalette1 = typeof palette1
-
-const palette2 = createPalette(input, {
-    base: baseColors,
-})
-type TPalette2 = typeof palette2
-
-const palette3 = createPalette(input, {
-    tones: { brightness, depths },
-})
-type TPalette3 = typeof palette3
-
-const palette = createPalette(input, {
-    base: baseColors,
-    tones: { brightness, depths },
-})
-type TPalette = typeof palette
