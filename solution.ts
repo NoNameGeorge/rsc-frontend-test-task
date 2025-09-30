@@ -186,3 +186,89 @@ const customTone = createTone((data: CustomColorData) => ({
     custom: data.primary,
 }))
 type TCustomTone = typeof customTone
+
+
+// =============== createPalette ===============
+/**
+ * ***решил оставить
+ *
+ * Логика работы createPalette (для себя для удобства)
+ * 1. Берем input (объект с цветовыми данными)
+ * 2. Если есть base - прогоняем каждый цвет через base
+ * 2.1. Берем результат base, соединяем с input[цвет] и записываем как "цвет"
+ * 2.2. Технически base может иметь subtone, но ее мы вроде не используем (да же?)
+ * 3. Далее работаем с tones, если они есть
+ * 3.1. Каждый input прогоняем через tone(data
+ * 3.2. Полученный результат записываем как "цвет_имя_тона" (например: "red_brightness")
+ * 3.3. Далее прогоняем input через subtone текущего тона
+ * 3.4. Полученный результат записываем как "цвет_подтон_имя_тона" (например: "red_low_brightness")
+ * 4. Вроде как все, соединяем все в один объект и возвращаем
+ */
+
+
+const input = {
+    red: {
+        main: 'red',
+        dark: 'darkred',
+        light: 'lightred',
+        extra: 'extrared',
+    },
+    green: {
+        main: 'green',
+        dark: 'darkgreen',
+        light: 'lightgreen',
+        extra: 'extragreen',
+    },
+    // blue: {
+    //     main: 'blue',
+    //     dark: 'darkblue',
+    //     light: 'lightblue',
+    //     extra: 'extrablue',
+    // },
+    // yellow: {
+    //     main: 'yellow',
+    //     dark: 'darkyellow',
+    //     light: 'lightyellow',
+    //     extra: 'extrayellow',
+    // },
+}
+// satisfies InputModel
+
+
+function createPalette(
+    input: Record<string, Record<string, string>>,
+    options?: {
+        base: {
+            (data: Record<string, string>): Record<string, string>
+            toneName?: string
+            subtone?: Record<string, (data: Record<string, string>) => Record<string, string>>
+        }
+        tones: Record<string, {
+            (data: Record<string, string>): Record<string, string>
+            toneName?: string
+            subtone?: Record<string, (data: Record<string, string>) => Record<string, string>>
+        }>
+    } 
+) {
+    
+    return {} as any
+}
+
+const palette = createPalette(input, {
+    base: baseColors,
+    tones: { brightness, depths },
+})
+type TPalette = typeof palette
+
+const palette1 = createPalette(input)
+type TPalette1 = typeof palette1
+
+const palette2 = createPalette(input, {
+    base: baseColors,
+})
+type TPalette2 = typeof palette2
+
+const palette3 = createPalette(input, {
+    tones: { brightness, depths },
+})
+type TPalette3 = typeof palette3
