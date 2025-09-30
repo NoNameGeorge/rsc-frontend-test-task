@@ -28,18 +28,36 @@ type InputModel = Record<ColorsUnion, ColorData>
  * Типизация должна быть максимально универсальной и подробной, как я понял
  */
 
-function createTone(
-    transform: (data: Record<string, string>) => Record<string, string>,
-    options?: {
-        name: string
-        subtone: Record<string, (data: Record<string, string>) => Record<string, string>>
-    }
-): {
-    (data: Record<string, string>): Record<string, string>
-    name?: string
-    subtone?: Record<string, (data: Record<string, string>) => Record<string, string>>
-} {
-    const toneFunction = (data: Record<string, string>) => transform(data)
+type ColorTransform<
+    TData extends Record<string, string> = ColorData,
+    TTransformResult extends Record<string, string> = Record<string, string>
+> = (data: TData) => TTransformResult
+
+function createTone<
+    TData extends Record<string, string> = ColorData,
+    TTransformResult extends Record<string, string> = Record<string, string>
+>(transform: ColorTransform<TData, TTransformResult>): { (data: TData): TTransformResult }
+
+function createTone<
+    TSubtones extends Record<string, (data: TData) => Record<string, string>>,
+    TName extends string,
+    TData extends Record<string, string> = ColorData,
+    TTransformResult extends Record<string, string> = Record<string, string>
+>(
+    transform: ColorTransform<TData, TTransformResult>,
+    options: { name: TName; subtone: TSubtones }
+): { (data: TData): TTransformResult; toneName: TName; subtone: TSubtones }
+
+function createTone<
+    TName extends string,
+    TData extends Record<string, string>,
+    TTransformResult extends Record<string, string>,
+    TSubtones extends Record<string, (data: TData) => Record<string, string>>
+>(
+    transform: ColorTransform<TData, TTransformResult>,
+    options?: { name: TName; subtone: TSubtones }
+) {
+    const toneFunction = (data: TData) => transform(data)
 
     if (options) {
         toneFunction.name = options.name
