@@ -29,9 +29,10 @@ type InputModel = Record<ColorsUnion, ColorData>
  */
 
 type ColorTransform<
-    TData extends Record<string, string> = ColorData,
-    TTransformResult extends Record<string, string> = Record<string, string>
-> = (data: TData) => TTransformResult
+    TData extends Record<string, string>,
+    TResult extends Record<string, string> = Record<string, string>
+> = (data: TData) => TResult
+type Subtones<TData extends Record<string, string>> = Record<string, ColorTransform<TData>>
 
 function createTone<
     TData extends Record<string, string> = ColorData,
@@ -39,7 +40,7 @@ function createTone<
 >(transform: ColorTransform<TData, TTransformResult>): { (data: TData): TTransformResult }
 
 function createTone<
-    TSubtones extends Record<string, (data: TData) => Record<string, string>>,
+    TSubtones extends Subtones<TData>,
     TName extends string,
     TData extends Record<string, string> = ColorData,
     TTransformResult extends Record<string, string> = Record<string, string>
@@ -52,16 +53,27 @@ function createTone<
     TName extends string,
     TData extends Record<string, string>,
     TTransformResult extends Record<string, string>,
-    TSubtones extends Record<string, (data: TData) => Record<string, string>>
+    TSubtones extends Subtones<TData>
 >(
     transform: ColorTransform<TData, TTransformResult>,
     options?: { name: TName; subtone: TSubtones }
 ) {
     const toneFunction = (data: TData) => transform(data)
 
-    if (options) {
-        toneFunction.name = options.name
-        toneFunction.subtone = options.subtone
+    if (options?.name) {
+        Object.defineProperty(toneFunction, 'toneName', {
+            value: options.name,
+            enumerable: true,
+            writable: false,
+        })
+    }
+    if (options?.subtone) {
+        const frozen = Object.freeze(options.subtone)
+        Object.defineProperty(toneFunction, 'subtone', {
+            value: frozen,
+            enumerable: true,
+            writable: false,
+        })
     }
 
     return toneFunction
