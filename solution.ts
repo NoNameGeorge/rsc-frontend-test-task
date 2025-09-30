@@ -235,6 +235,14 @@ const input = {
 // type TBase = any
 // type TTones = any
 
+type ToneInstance<
+    TData extends Record<string, string>,
+    TResult extends Record<string, string> = Record<string, string>
+> = ((data: TData) => TResult) & {
+    readonly toneName?: string
+    readonly subtone?: Subtones<TData>
+}
+
 function createPalette<
     TInput extends Record<string, TData>,
     TData extends Record<string, string> = ColorData
@@ -242,14 +250,7 @@ function createPalette<
 
 function createPalette<
     TInput extends Record<string, TData>,
-    TBase extends (data: TData) => Record<string, string> &
-        (
-            | {
-                  readonly toneName?: string
-                  readonly subtone?: Record<string, (data: TData) => Record<string, string>>
-              }
-            | { readonly toneName?: never; readonly subtone?: never }
-        ),
+    TBase extends ToneInstance<TData>,
     TData extends Record<string, string> = ColorData
 >(
     input: TInput,
