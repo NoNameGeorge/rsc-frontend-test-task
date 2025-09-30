@@ -1,0 +1,17 @@
+{
+    "name": "rsc-frontend-test-task",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "index.ts",
+    "scripts": {
+        "demo": "node dist/demo.js",
+        "solution": "npm run build && node dist/solution.js",
+        "build": "tsc",
+        "start": "node dist/index.js"
+    },
+    "devDependencies": {
+        "@types/node": "^20.0.0",
+        "typescript": "^5.0.0",
+        "ts-node": "^10.9.0"
+    }
+}
