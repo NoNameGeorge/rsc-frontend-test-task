@@ -321,7 +321,42 @@ function createPalette<
         tones?: TTones
     }
 ) {
-   
+    type ResultType = TInput &
+        (TBase extends ToneInstance<TData> ? PaletteWithBase<TInput, TData, TBase> : {}) &
+        (TTones extends Record<string, ToneInstance<TData>>
+            ? PaletteWithTones<TInput, TData, TTones>
+            : {})
+
+    const result: ResultType = { ...input } as ResultType
+    const resultRecord = result as Record<string, unknown>
+
+    if (options?.base) {
+        for (const [colorName, colorData] of Object.entries(input)) {
+            const baseResult = options.base(colorData)
+            resultRecord[colorName] = {
+                ...colorData,
+                ...baseResult,
+            }
+        }
+    }
+
+    if (options?.tones) {
+        for (const [toneKey, tone] of Object.entries(options.tones)) {
+            const toneName = tone.toneName ?? toneKey
+
+            for (const [colorName, colorData] of Object.entries(input)) {
+                const toneResult = tone(colorData)
+                resultRecord[`${colorName}_${toneName}`] = toneResult
+
+                if (tone.subtone) {
+                    for (const [subtoneKey, subtoneTransform] of Object.entries(tone.subtone)) {
+                        const subtoneResult = subtoneTransform(colorData)
+                        resultRecord[`${colorName}_${subtoneKey}_${toneName}`] = subtoneResult
+                    }
+                }
+            }
+        }
+    }
 
     return result
 }
