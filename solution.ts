@@ -41,12 +41,18 @@ export type ToneInstance<
     TName extends string = string
 > = { (data: TData): TResult; readonly toneName?: TName; readonly subtone?: Subtones<TData> }
 
-export function createTone<
+/**
+ * Создает функцию тона
+ * @param transform трансформация, создающая новый объект на базе цвета
+ * @param options опциональное имя и подтоны, которые будут добавлены к функции
+ * @returns функцию тона с дополнительными свойствами при их наличии
+ */
+function createTone<
     TData extends Record<string, string> = ColorData,
     TResult extends Record<string, string> = Record<string, string>
 >(transform: ColorTransform<TData, TResult>): Tone<TData, TResult>
 
-export function createTone<
+function createTone<
     TData extends Record<string, string> = ColorData,
     TResult extends Record<string, string> = Record<string, string>,
     TName extends string = string,
@@ -56,7 +62,7 @@ export function createTone<
     options: { name: TName; subtone: TSubtones }
 ): { (data: TData): TResult; readonly toneName: TName; readonly subtone: TSubtones }
 
-export function createTone<
+function createTone<
     TData extends Record<string, string> = ColorData,
     TResult extends Record<string, string> = Record<string, string>,
     TName extends string | undefined = undefined,
@@ -91,7 +97,6 @@ export function createTone<
     return toneFunction
 }
 
-
 // =============== createPalette ===============
 /**
  * ***решил оставить
@@ -108,33 +113,6 @@ export function createTone<
  * 3.4. Полученный результат записываем как "цвет_подтон_имя_тона" (например: "red_low_brightness")
  * 4. Вроде как все, соединяем все в один объект и возвращаем
  */
-
-const input = {
-    red: {
-        main: 'red',
-        dark: 'darkred',
-        light: 'lightred',
-        extra: 'extrared',
-    },
-    green: {
-        main: 'green',
-        dark: 'darkgreen',
-        light: 'lightgreen',
-        extra: 'extragreen',
-    },
-    blue: {
-        main: 'blue',
-        dark: 'darkblue',
-        light: 'lightblue',
-        extra: 'extrablue',
-    },
-    yellow: {
-        main: 'yellow',
-        dark: 'darkyellow',
-        light: 'lightyellow',
-        extra: 'extrayellow',
-    },
-} satisfies InputModel
 
 type UnionToIntersection<U> = (U extends any ? (arg: U) => void : never) extends (
     arg: infer I
@@ -182,6 +160,12 @@ type PaletteWithTones<
     }[keyof TInput]
 >
 
+/**
+ * Собирает палитру цветов
+ * @param input исходные цветовые данные
+ * @param options дополнительные преобразования: базовый тон и набор тонов
+ * @returns объединенный объект с исходными данными и результатами преобразований
+ */
 function createPalette<TData extends Record<string, string>, TInput extends Record<string, TData>>(
     input: TInput
 ): TInput
@@ -260,27 +244,4 @@ function createPalette<
     return result
 }
 
-// const palette1 = createPalette(input)
-// type TPalette1 = typeof palette1
-
-// const palette2 = createPalette(input, {
-//     base: baseColors,
-// })
-// type TPalette2 = typeof palette2
-
-// const palette3 = createPalette(input, {
-//     tones: { brightness, depths },
-// })
-// type TPalette3 = typeof palette3
-
-// const palette = createPalette(input, {
-//     base: baseColors,
-//     tones: { baseColors, brightness, depths },
-// })
-// type TPalette = typeof palette
-
-// const palette4 = createPalette(input, {
-//     base: baseColors,
-//     tones: {},
-// })
-// type TPalette4 = typeof palette4
+export { createPalette, createTone }

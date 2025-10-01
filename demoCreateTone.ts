@@ -1,9 +1,7 @@
-import { createTone, type ColorData, type ToneInstance, type Subtones } from './solution.js'
-
-
+import { createTone } from './solution.js'
 
 // Пример 1 ==================================
-const baseColors = createTone((data) => ({
+export const baseColors = createTone((data) => ({
     background: data.main,
     color: data.main,
 }))
@@ -11,7 +9,7 @@ export type BaseColors = typeof baseColors
 export type BaseColorsResult = ReturnType<typeof baseColors>
 
 // Пример 2 ==================================
-const brightness = createTone(
+export const brightness = createTone(
     (data) => ({
         foreground: data.main,
         customProp: '#f0f0f0',
@@ -34,7 +32,7 @@ export type Brightness = typeof brightness
 export type BrightnessResult = ReturnType<typeof brightness>
 
 // Пример 3 ==================================
-const depths = createTone(
+export const depths = createTone(
     (data) => ({
         background: data.light,
         foreground: data.main,
@@ -60,7 +58,7 @@ export type Depths = typeof depths
 export type DepthsResult = ReturnType<typeof depths>
 
 // Пример 4 ==================================
-const gradients = createTone(
+export const gradients = createTone(
     (data) => ({
         primary: `linear-gradient(45deg, ${data.main}, ${data.light})`,
         secondary: `linear-gradient(135deg, ${data.dark}, ${data.main})`,
@@ -85,7 +83,7 @@ export type Gradients = typeof gradients
 export type GradientsResult = ReturnType<typeof gradients>
 
 // Пример 5 ==================================
-const shadows = createTone(
+export const shadows = createTone(
     (data) => ({
         dropShadow: `0 4px 8px ${data.dark}40`,
         innerShadow: `inset 0 2px 4px ${data.dark}60`,
@@ -108,53 +106,3 @@ const shadows = createTone(
 )
 export type Shadows = typeof shadows
 export type ShadowsResult = ReturnType<typeof shadows>
-
-// ==============================
-const demoColorData: ColorData = {
-    main: '#3366FF',
-    dark: '#1A2A6C',
-    light: '#86A8E7',
-    extra: '#FF4081',
-}
-
-const neutralTone = createTone((data) => ({
-    background: data.light,
-    foreground: data.dark,
-    border: data.main,
-}))
-export type NeutralTone = typeof neutralTone
-export type NeutralToneResult = ReturnType<typeof neutralTone>
-
-const accentTone = createTone(
-    (data) => ({
-        primary: data.main,
-        secondary: data.extra,
-        contrast: data.dark,
-    }),
-    {
-        name: 'accent',
-        subtone: {
-            vivid: (data) => ({ highlight: data.extra }),
-            muted: (data) => ({ highlight: data.light }),
-        },
-    }
-)
-export type AccentTone = typeof accentTone
-export type AccentToneResult = ReturnType<typeof accentTone>
-
-const monochromeTone = createTone(
-    (data) => ({
-        text: data.dark,
-        base: data.main,
-        overlay: data.light,
-    }),
-    {
-        name: 'monochrome',
-        subtone: {
-            light: (data) => ({ tint: `${data.light}99` }),
-            shadow: (data) => ({ shade: `${data.dark}CC` }),
-        },
-    }
-)
-export type MonochromeTone = typeof monochromeTone
-export type MonochromeToneResult = ReturnType<typeof monochromeTone>

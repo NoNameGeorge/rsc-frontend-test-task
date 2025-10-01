@@ -4,7 +4,8 @@
     "type": "module",
     "main": "index.ts",
     "scripts": {
-        "demo": "npm run build && node dist/demo.js",
+        "demoCreateTone": "npm run build && node dist/demoCreateTone.js",
+        "demoCreatePalette": "npm run build && node dist/demoCreatePalette.js",
         "solution": "npm run build && node dist/solution.js",
         "build": "tsc",
         "start": "node dist/index.js"
