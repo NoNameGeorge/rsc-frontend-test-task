@@ -1,12 +1,12 @@
-type ColorsUnion = 'red' | 'green' | 'blue' | 'yellow'
-type ColorData = {
+export type ColorsUnion = 'red' | 'green' | 'blue' | 'yellow'
+export type ColorData = {
     main: string
     dark: string
     light: string
     extra: string
 }
 
-type InputModel = Record<ColorsUnion, ColorData>
+export type InputModel = Record<ColorsUnion, ColorData>
 
 /**
  * Описание функции createTone, как я его понял
@@ -25,7 +25,7 @@ type ColorTransform<
     TData extends Record<string, string>,
     TResult extends Record<string, string>
 > = (data: TData) => TResult
-type Subtones<
+export type Subtones<
     TData extends Record<string, string>,
     TResult extends Record<string, string> = Record<string, string>
 > = Record<string, ColorTransform<TData, TResult>>
@@ -35,18 +35,18 @@ type Tone<
     TName extends string | undefined = undefined
 > = ((data: TData) => TResult) &
     (TName extends string ? { readonly toneName?: TName; readonly subtone?: Subtones<TData> } : {})
-type ToneInstance<
+export type ToneInstance<
     TData extends Record<string, string>,
     TResult extends Record<string, string> = Record<string, string>,
     TName extends string = string
 > = { (data: TData): TResult; readonly toneName?: TName; readonly subtone?: Subtones<TData> }
 
-function createTone<
+export function createTone<
     TData extends Record<string, string> = ColorData,
     TResult extends Record<string, string> = Record<string, string>
 >(transform: ColorTransform<TData, TResult>): Tone<TData, TResult>
 
-function createTone<
+export function createTone<
     TData extends Record<string, string> = ColorData,
     TResult extends Record<string, string> = Record<string, string>,
     TName extends string = string,
@@ -56,7 +56,7 @@ function createTone<
     options: { name: TName; subtone: TSubtones }
 ): { (data: TData): TResult; readonly toneName: TName; readonly subtone: TSubtones }
 
-function createTone<
+export function createTone<
     TData extends Record<string, string> = ColorData,
     TResult extends Record<string, string> = Record<string, string>,
     TName extends string | undefined = undefined,
@@ -91,107 +91,6 @@ function createTone<
     return toneFunction
 }
 
-// Пример 1 ==================================
-const baseColors = createTone((data) => ({
-    background: data.main,
-    color: data.main,
-}))
-type TBaseColors = typeof baseColors
-
-// Пример 2 ==================================
-const brightness = createTone(
-    (data) => ({
-        foreground: data.main,
-        customProp: '#f0f0f0',
-    }),
-    {
-        name: 'brightness',
-        subtone: {
-            low: (data) => ({ white: data.light }),
-            medium: (data) => ({ shadow: data.main }),
-            high: (data) => ({
-                someProp: 'transparent',
-                anotherProp: '#fff',
-                thirdCustomProp: data.main,
-            }),
-            ultra: (data) => ({ intensive: data.extra }),
-        },
-    }
-)
-type TBrightness = typeof brightness
-
-// Пример 3 ==================================
-const depths = createTone(
-    (data) => ({
-        background: data.light,
-        foreground: data.main,
-        color: data.extra,
-    }),
-    {
-        name: 'depth',
-        subtone: {
-            '8-bit': (data) => ({
-                borderColor: data.main,
-            }),
-            '16-bit': (data) => ({
-                borderColor: data.main,
-                anotherColor: data.light,
-            }),
-            '24-bit': (data) => ({
-                extraColor: data.extra,
-            }),
-        },
-    }
-)
-type TDepths = typeof depths
-
-// Пример 4 ==================================
-const gradients = createTone(
-    (data) => ({
-        primary: `linear-gradient(45deg, ${data.main}, ${data.light})`,
-        secondary: `linear-gradient(135deg, ${data.dark}, ${data.main})`,
-        accent: `radial-gradient(circle, ${data.light}, ${data.extra})`,
-    }),
-    {
-        name: 'gradients',
-        subtone: {
-            horizontal: (data) => ({
-                leftToRight: `linear-gradient(90deg, ${data.main}, ${data.light})`,
-            }),
-            vertical: (data) => ({
-                topToBottom: `linear-gradient(180deg, ${data.main}, ${data.dark})`,
-            }),
-            diagonal: (data) => ({
-                cornerToCorner: `linear-gradient(45deg, ${data.light}, ${data.dark})`,
-            }),
-        },
-    }
-)
-type TGradients = typeof gradients
-
-// Пример 5 ==================================
-const shadows = createTone(
-    (data) => ({
-        dropShadow: `0 4px 8px ${data.dark}40`,
-        innerShadow: `inset 0 2px 4px ${data.dark}60`,
-        glow: `0 0 20px ${data.main}80`,
-    }),
-    {
-        name: 'shadows',
-        subtone: {
-            subtle: (data) => ({
-                lightShadow: `0 1px 3px ${data.light}30`,
-            }),
-            dramatic: (data) => ({
-                heavyShadow: `0 8px 32px ${data.dark}70`,
-            }),
-            neon: (data) => ({
-                neonGlow: `0 0 40px ${data.extra}90`,
-            }),
-        },
-    }
-)
-type TShadows = typeof shadows
 
 // =============== createPalette ===============
 /**
@@ -361,27 +260,27 @@ function createPalette<
     return result
 }
 
-const palette1 = createPalette(input)
-type TPalette1 = typeof palette1
+// const palette1 = createPalette(input)
+// type TPalette1 = typeof palette1
 
-const palette2 = createPalette(input, {
-    base: baseColors,
-})
-type TPalette2 = typeof palette2
+// const palette2 = createPalette(input, {
+//     base: baseColors,
+// })
+// type TPalette2 = typeof palette2
 
-const palette3 = createPalette(input, {
-    tones: { brightness, depths },
-})
-type TPalette3 = typeof palette3
+// const palette3 = createPalette(input, {
+//     tones: { brightness, depths },
+// })
+// type TPalette3 = typeof palette3
 
-const palette = createPalette(input, {
-    base: baseColors,
-    tones: { baseColors, brightness, depths },
-})
-type TPalette = typeof palette
+// const palette = createPalette(input, {
+//     base: baseColors,
+//     tones: { baseColors, brightness, depths },
+// })
+// type TPalette = typeof palette
 
-const palette4 = createPalette(input, {
-    base: baseColors,
-    tones: {},
-})
-type TPalette4 = typeof palette4
+// const palette4 = createPalette(input, {
+//     base: baseColors,
+//     tones: {},
+// })
+// type TPalette4 = typeof palette4
