@@ -6,13 +6,6 @@ type ColorData = {
     extra: string
 }
 
-// Чисто для теста создал, но акцент наверное будет на ColorData
-type CustomColorData = {
-    primary: string
-    secondary: string
-    tertiary: string
-}
-
 type InputModel = Record<ColorsUnion, ColorData>
 
 /**
@@ -42,6 +35,11 @@ type Tone<
     TName extends string | undefined = undefined
 > = ((data: TData) => TResult) &
     (TName extends string ? { readonly toneName?: TName; readonly subtone?: Subtones<TData> } : {})
+type ToneInstance<
+    TData extends Record<string, string>,
+    TResult extends Record<string, string> = Record<string, string>,
+    TName extends string = string
+> = { (data: TData): TResult; readonly toneName?: TName; readonly subtone?: Subtones<TData> }
 
 function createTone<
     TData extends Record<string, string> = ColorData,
@@ -195,8 +193,160 @@ const shadows = createTone(
 )
 type TShadows = typeof shadows
 
-// Пример 6 ==================================
-const customTone = createTone((data: CustomColorData) => ({
-    custom: data.primary,
-}))
-type TCustomTone = typeof customTone
+// =============== createPalette ===============
+/**
+ * ***решил оставить
+ *
+ * Логика работы createPalette (для себя для удобства)
+ * 1. Берем input (объект с цветовыми данными)
+ * 2. Если есть base - прогоняем каждый цвет через base
+ * 2.1. Берем результат base, соединяем с input[цвет] и записываем как "цвет"
+ * 2.2. Технически base может иметь subtone, но ее мы вроде не используем (да же?)
+ * 3. Далее работаем с tones, если они есть
+ * 3.1. Каждый input прогоняем через tone
+ * 3.2. Полученный результат записываем как "цвет_имя_тона" (например: "red_brightness")
+ * 3.3. Далее прогоняем input через subtone текущего тона
+ * 3.4. Полученный результат записываем как "цвет_подтон_имя_тона" (например: "red_low_brightness")
+ * 4. Вроде как все, соединяем все в один объект и возвращаем
+ */
+
+const input = {
+    red: {
+        main: 'red',
+        dark: 'darkred',
+        light: 'lightred',
+        extra: 'extrared',
+    },
+    green: {
+        main: 'green',
+        dark: 'darkgreen',
+        light: 'lightgreen',
+        extra: 'extragreen',
+    },
+    blue: {
+        main: 'blue',
+        dark: 'darkblue',
+        light: 'lightblue',
+        extra: 'extrablue',
+    },
+    yellow: {
+        main: 'yellow',
+        dark: 'darkyellow',
+        light: 'lightyellow',
+        extra: 'extrayellow',
+    },
+} satisfies InputModel
+
+type UnionToIntersection<U> = (U extends any ? (arg: U) => void : never) extends (
+    arg: infer I
+) => void
+    ? I
+    : never
+
+type ToneName<TTone, TKey extends PropertyKey = never> = TTone extends { toneName?: infer TName }
+    ? TName extends string
+        ? TName
+        : Extract<TKey, string>
+    : Extract<TKey, string>
+
+type PaletteWithBase<
+    TInput extends Record<string, TData>,
+    TData extends Record<string, string>,
+    TBase extends ToneInstance<TData>
+> = { [K in keyof TInput]: TInput[K] & ReturnType<TBase> }
+
+type PaletteWithTones<
+    TInput extends Record<string, TData>,
+    TData extends Record<string, string> = ColorData,
+    TTones extends Record<string, ToneInstance<TData>> = Record<string, ToneInstance<TData>>
+> = UnionToIntersection<
+    {
+        [ColorKey in keyof TInput]: {
+            [ToneKey in keyof TTones]: {
+                [Key in `${Extract<ColorKey, string>}_${ToneName<
+                    TTones[ToneKey],
+                    ToneKey
+                >}`]: ReturnType<TTones[ToneKey]>
+            } & (TTones[ToneKey] extends {
+                subtone: infer TSub extends Subtones<TData>
+            }
+                ? {
+                      [SubtoneKey in keyof TSub]: {
+                          [Key in `${Extract<ColorKey, string>}_${Extract<
+                              SubtoneKey,
+                              string
+                          >}_${ToneName<TTones[ToneKey], ToneKey>}`]: ReturnType<TSub[SubtoneKey]>
+                      }
+                  }[keyof TSub]
+                : {})
+        }[keyof TTones]
+    }[keyof TInput]
+>
+
+function createPalette<TData extends Record<string, string>, TInput extends Record<string, TData>>(
+    input: TInput
+): TInput
+
+function createPalette<
+    TData extends Record<string, string> = ColorData,
+    TInput extends Record<string, TData> = Record<string, TData>,
+    TBase extends ToneInstance<TData> = ToneInstance<TData>
+>(input: TInput, options: { base: TBase }): PaletteWithBase<TInput, TData, TBase>
+
+function createPalette<
+    TData extends Record<string, string> = ColorData,
+    TInput extends Record<string, TData> = Record<string, TData>,
+    TTones extends Record<string, ToneInstance<TData>> = Record<string, ToneInstance<TData>>
+>(input: TInput, options: { tones: TTones }): TInput & PaletteWithTones<TInput, TData, TTones>
+
+function createPalette<
+    TInput extends Record<string, TData>,
+    TData extends Record<string, string> = ColorData,
+    TBase extends ToneInstance<TData> = ToneInstance<TData>,
+    TTones extends Record<string, ToneInstance<TData>> = Record<string, ToneInstance<TData>>
+>(
+    input: TInput,
+    options: { base: TBase; tones: TTones }
+): PaletteWithBase<TInput, TData, TBase> & PaletteWithTones<TInput, TData, TTones>
+
+function createPalette<
+    TData extends Record<string, string>,
+    TInput extends Record<string, TData>,
+    TBase extends ToneInstance<TData> | undefined = undefined,
+    TTones extends Record<string, ToneInstance<TData>> | undefined = undefined
+>(
+    input: TInput,
+    options?: {
+        base?: TBase
+        tones?: TTones
+    }
+) {
+   
+
+    return result
+}
+
+const palette1 = createPalette(input)
+type TPalette1 = typeof palette1
+
+const palette2 = createPalette(input, {
+    base: baseColors,
+})
+type TPalette2 = typeof palette2
+
+const palette3 = createPalette(input, {
+    tones: { brightness, depths },
+})
+type TPalette3 = typeof palette3
+
+const palette = createPalette(input, {
+    base: baseColors,
+    tones: { baseColors, brightness, depths },
+})
+type TPalette = typeof palette
+
+const palette4 = createPalette(input, {
+    base: baseColors,
+    tones: {},
+})
+type TPalette4 = typeof palette4
