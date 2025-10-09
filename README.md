@@ -1,8 +1,8 @@
 ## Команды
 -   `npm install` - установка зависимостей
--   `npm run demoCreatePalette` - собирать + запустить файл demoCreatePalette.ts
--   `npm run demoCreateTone` - собирать + запустить файл demoCreateTone.ts    
--   `npm run solution` - собирать + запустить файл solution.ts
+-   `npm run demoCreatePalette` - собрать + запустить файл demoCreatePalette.ts
+-   `npm run demoCreateTone` - собрать + запустить файл demoCreateTone.ts    
+-   `npm run solution` - собрать + запустить файл solution.ts
 
 ## Что за файлы? о_О
 -   `demoCreatePalette.ts` — основной файл с примерами вызовов `createPalette`; для просмотра результата запускайте его (например, `npm run demoCreatePalette`). Результат такой же, как в конце тестового задания
